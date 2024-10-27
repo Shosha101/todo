@@ -36,129 +36,163 @@ class _HomeLayoutState extends State<HomeLayout> {
         builder: (BuildContext context, TodoStates state) {
           TodoCubit cubit = TodoCubit.get(context);
           return Scaffold(
-            key: scaffoldKey,
-            appBar: AppBar(
-              title: Text(
-                cubit.titles[cubit.numberOfTap],
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 25.0,
-                    fontWeight: FontWeight.bold),
+              key: scaffoldKey,
+              appBar: AppBar(
+                title: Text(
+                  cubit.titles[cubit.numberOfTap],
+                  style: const TextStyle(
+                      color: Colors.black87,
+                      fontSize: 25.0,
+                      fontWeight: FontWeight.bold),
+                ),
               ),
-            ),
-            floatingActionButton: FloatingActionButton(
-              onPressed: () {
-                if (cubit.isBottomSheetShown) {
-                  if (formKey.currentState!.validate()) {
-                    cubit.insertToDB(
-                        title: titleController.text,
-                        time: timeController.text,
-                        date: dateController.text);
+              floatingActionButton: FloatingActionButton(
+                onPressed: () {
+                  if (cubit.isBottomSheetShown) {
+                    if (formKey.currentState!.validate()) {
+                      cubit.insertToDB(
+                          title: titleController.text,
+                          time: timeController.text,
+                          date: dateController.text);
 
-                    titleController.text = "";
-                    timeController.text = "";
-                    dateController.text = "";
-
-                  }
-                } else {
-                  scaffoldKey.currentState!
-                      .showBottomSheet(
-                        elevation: 15.0,
-                        (context) => Container(
-                          color: Colors.grey[100],
-                          padding: const EdgeInsets.all(20.0),
-                          child: Form(
-                            key: formKey,
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                tff(
-                                    label: "Task Title",
-                                    controller: titleController,
-                                    prefixIcon: const Icon(Icons.title),
-                                    validator: (value) {
-                                      if (value.isEmpty) {
-                                        return "Title must not be empty";
-                                      }
-                                      return null;
-                                    }),
-                                const SizedBox(height: 15.0),
-                                tff(
-                                    label: "Task Time",
-                                    controller: timeController,
-                                    textType: TextInputType.none,
-                                    prefixIcon:
-                                        const Icon(Icons.timer_outlined),
+                      titleController.text = "";
+                      timeController.text = "";
+                      dateController.text = "";
+                    }
+                  } else {
+                    scaffoldKey.currentState!
+                        .showBottomSheet(
+                          elevation: 15.0,
+                          (context) => Container(
+                            color: Colors.grey[100],
+                            padding: const EdgeInsets.all(20.0),
+                            child: Form(
+                              key: formKey,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  tff(
+                                      label: "Task Title",
+                                      controller: titleController,
+                                      prefixIcon: const Icon(Icons.title),
+                                      validator: (value) {
+                                        if (value?.isEmpty) {
+                                          return "Title must not be empty";
+                                        }
+                                        return null;
+                                      }),
+                                  const SizedBox(height: 15.0),
+                                  GestureDetector(
                                     onTap: () {
                                       showTimePicker(
-                                              context: context,
-                                              initialTime: TimeOfDay.now())
-                                          .then((value) {
-                                        timeController.text =
-                                            value!.format(context).toString();
+                                        context: context,
+                                        initialTime: TimeOfDay.now(),
+                                      ).then((value) {
+                                        if (value != null) {
+                                          timeController.text = value.format(context).toString();
+                                        }
                                       });
                                     },
-                                    validator: (value) {
-                                      if (value.isEmpty) {
-                                        return "Time must not be empty";
-                                      }
-                                      return null;
-                                    }),
-                                const SizedBox(height: 15.0),
-                                tff(
-                                    label: "Task Date",
-                                    controller: dateController,
-                                    textType: TextInputType.none,
-                                    prefixIcon:
-                                        const Icon(Icons.calendar_today),
+                                    child: AbsorbPointer(
+                                      child: tff(
+                                        label: "Task Time",
+                                        controller: timeController,
+                                        textType: TextInputType.none,
+                                        prefixIcon: const Icon(Icons.timer_outlined),
+                                        onTap: () {
+                                          showTimePicker(
+                                            context: context,
+                                            initialTime: TimeOfDay.now(),
+                                          ).then((value) {
+                                            if (value != null) {
+                                              timeController.text = value.format(context).toString();
+                                            }
+                                          });
+                                        },
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return "Time must not be empty";
+                                          }
+                                          return null;
+                                        },
+                                      ),
+                                    ),
+                                  ),
+
+                                  const SizedBox(height: 15.0),
+
+                                  GestureDetector(
                                     onTap: () {
                                       showDatePicker(
-                                              context: context,
-                                              initialDate: DateTime.now(),
-                                              firstDate: DateTime.now(),
-                                              lastDate:
-                                                  DateTime.parse("2024-10-25"))
-                                          .then((value) {
-                                        dateController.text =
-                                            DateFormat.yMMMd().format(value!);
+                                        context: context,
+                                        initialDate: DateTime.now(),
+                                        firstDate: DateTime.now(),
+                                        lastDate: DateTime.now().add(const Duration(days: 365)),
+                                      ).then((selectedDate) {
+                                        if (selectedDate != null) {
+                                          dateController.text = DateFormat.yMMMd().format(selectedDate);
+                                        }
                                       });
                                     },
-                                    validator: (value) {
-                                      if (value.isEmpty) {
-                                        return "Date must not be empty";
-                                      }
-                                      return null;
-                                    }),
-                              ],
+                                    child: AbsorbPointer(
+                                      child: tff(
+                                        label: "Task Date",
+                                        controller: dateController,
+                                        textType: TextInputType.none,
+                                        prefixIcon: const Icon(Icons.calendar_today),
+                                        onTap: () {
+                                          showDatePicker(
+                                            context: context,
+                                            initialDate: DateTime.now(),
+                                            firstDate: DateTime.now(),
+                                            lastDate: DateTime.now().add(const Duration(days: 365)),
+                                          ).then((selectedDate) {
+                                            if (selectedDate != null) {
+                                              dateController.text = DateFormat.yMMMd().format(selectedDate);
+                                            }
+                                          });
+                                        },
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return "Date must not be empty";
+                                          }
+                                          return null;
+                                        },
+                                      ),
+                                    ),
+                                  ),
+
+
+
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                      )
-                      .closed
-                      .then((value) {
-                    cubit.changeBottomSheet(isShow: false, icon: Icons.edit);
-                  });
-                  cubit.changeBottomSheet(isShow: true, icon: Icons.add);
-                }
-              },
-              child: Icon(cubit.fabIcon),
-            ),
-            bottomNavigationBar: BottomNavigationBar(
-                type: BottomNavigationBarType.fixed,
-                currentIndex: cubit.numberOfTap,
-                onTap: (index) {
-                  cubit.changeIndex(index);
+                        )
+                        .closed
+                        .then((value) {
+                      cubit.changeBottomSheet(isShow: false, icon: Icons.edit);
+                    });
+                    cubit.changeBottomSheet(isShow: true, icon: Icons.add);
+                  }
                 },
-                items: const [
-                  BottomNavigationBarItem(
-                      icon: Icon(Icons.menu), label: "Tasks"),
-                  BottomNavigationBarItem(
-                      icon: Icon(Icons.check_circle_outline), label: "Done"),
-                  BottomNavigationBarItem(
-                      icon: Icon(Icons.archive_outlined), label: "archive"),
-                ]),
-            body: cubit.screens[cubit.numberOfTap]
-          );
+                child: Icon(cubit.fabIcon),
+              ),
+              bottomNavigationBar: BottomNavigationBar(
+                  type: BottomNavigationBarType.fixed,
+                  currentIndex: cubit.numberOfTap,
+                  onTap: (index) {
+                    cubit.changeIndex(index);
+                  },
+                  items: const [
+                    BottomNavigationBarItem(
+                        icon: Icon(Icons.menu), label: "Tasks"),
+                    BottomNavigationBarItem(
+                        icon: Icon(Icons.check_circle_outline), label: "Done"),
+                    BottomNavigationBarItem(
+                        icon: Icon(Icons.archive_outlined), label: "archive"),
+                  ]),
+              body: cubit.screens[cubit.numberOfTap]);
         },
       ),
     );
